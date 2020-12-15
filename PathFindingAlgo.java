@@ -20,11 +20,6 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
-// import javax.swing.JSlider;
-// import javax.swing.border.Border;
-// import javax.swing.border.EtchedBorder;
-// import javax.swing.event.ChangeEvent;
-// import javax.swing.event.ChangeListener;
 import javax.swing.JComboBox;
 
 // import javax.swing.*;
@@ -40,6 +35,8 @@ import java.awt.event.*;
 public class PathFindingAlgo {
 
     JFrame frame;
+
+    ArrayList<Cell> q = new ArrayList<>();
     
     private final int boardXlength = 1176;
     private final int boardYlength = 400;
@@ -57,6 +54,8 @@ public class PathFindingAlgo {
     private int buttonWidth = 120;
     private int buttonHeight = 35;
     boolean solving = false;
+    boolean pauseAlgo = false;
+    boolean algoInProcess = false;
     private int buttonBgColor = 0xD09683;
     private int legendPanelWidth = 180;
     private int legendPanelHeight = 30;
@@ -80,11 +79,11 @@ public class PathFindingAlgo {
     JPanel pathColor = new JPanel();
 
     JLabel headingLabel = new JLabel("Path Finding Visualizer");
-    JLabel startLabel = new JLabel("Start Cell");
-    JLabel endLabel = new JLabel("End Cell");
+    JLabel startLabel = new JLabel("Source ");
+    JLabel endLabel = new JLabel("Destination ");
     JLabel wallLabel = new JLabel("Wall");
     JLabel checkedLabel = new JLabel("Checked Cell");
-    JLabel pathLabel = new JLabel("Path");
+    JLabel pathLabel = new JLabel("Final Path");
     JLabel distLabel = new JLabel("Distance : ");
     JLabel distValueLabel = new JLabel();
     // JPanel algoBox = new JPanel();
@@ -96,16 +95,17 @@ public class PathFindingAlgo {
     RoundButton clearBoardButton = new RoundButton("Clear Board");
     RoundButton clearPathButton = new RoundButton("Clear Path");
     RoundButton stopButton = new RoundButton("Stop");
+    RoundButton continueButton = new RoundButton("Conitnue");
     RoundButton visualizeButton = new RoundButton("Visualize!");
     private String[] algoSelect = {"Select Algorithm","Dijkstra","A*"};
     private String[] speedSelect = {"Select Speed","Slow","Average","Fast"};
-    private String[] tools = {"Start","Finish","Wall", "Eraser"};
+    private String[] tools = {"Source","Destination","Wall", "Wall Remover"};
     JComboBox<String> algoBox = new JComboBox<>(algoSelect);
     JComboBox<String> speedBox = new JComboBox<>(speedSelect);
     JComboBox<String> toolBox = new JComboBox<>(tools);
 
-    public Color darkColor = new Color(65, 38, 92);
-    public Color lightColor = new Color(255, 213, 212);
+    public Color darkColor = new Color(47, 149, 154);
+    public Color lightColor = new Color(255,255,255);
     public Color midColor = new Color(224, 135, 139);
 
 	Cell[][] grid;
@@ -125,6 +125,7 @@ public class PathFindingAlgo {
     
     public void createBoard()
     {
+        distValueLabel.setText("");
         grid = new Cell[numOfCellsOnX][numOfCellsOnY];
 
         for(int i=0 ; i<numOfCellsOnX ; i++)
@@ -138,6 +139,7 @@ public class PathFindingAlgo {
 
     public void clearPath()
     {
+        distValueLabel.setText("");
         for(int i=0 ; i<numOfCellsOnX ; i++) 
         {
             for(int j=0 ; j<numOfCellsOnY ; j++)
@@ -193,18 +195,23 @@ public class PathFindingAlgo {
         settingBox.setBackground(lightColor);
         settingBox.setBounds(25,1,1200,75);
 
+        int selectWidth = 150;
+        int x = 1;
+        int spaceBetween = 28;
+
         algoBox.setLayout(null);
-        algoBox.setBounds(25,25,150,25);
+        algoBox.setBounds(3,25,selectWidth,25);
         settingBox.add(algoBox);
         
         speedBox.setLayout(null);
-        speedBox.setBounds(200,25,150,25);
+        speedBox.setBounds(3 + spaceBetween*x + selectWidth*x,25,150,25);
         settingBox.add(speedBox);
+        x++;
 
         toolBox.setLayout(null);
-        toolBox.setBounds(375,25,150,25);
+        toolBox.setBounds(3 + spaceBetween*x + selectWidth*x,25,150,25);
         settingBox.add(toolBox);
-
+        x++;
 
 
 
@@ -239,20 +246,29 @@ public class PathFindingAlgo {
 
         clearBoardButton.setLayout(null);
         // clearBoardButton.setBackground(new Color(0f,0f,0f,0f ));
-        clearBoardButton.setPosition(550,20,buttonWidth,buttonHeight);
+        clearBoardButton.setPosition(3 + spaceBetween*x + selectWidth*x,20,buttonWidth,buttonHeight);
         settingBox.add(clearBoardButton);
 
+        int z = 1;
         clearPathButton.setLayout(null);
-        clearPathButton.setPosition(695,20,buttonWidth,buttonHeight);
+        clearPathButton.setPosition(3 + spaceBetween*(x+z) + selectWidth*x + buttonWidth*z ,20,buttonWidth,buttonHeight);
         settingBox.add(clearPathButton);
+        z++;
 
         stopButton.setLayout(null);
-        stopButton.setPosition(840,20,buttonWidth,buttonHeight);
+        stopButton.setPosition(3 + spaceBetween*(x+z) + selectWidth*x + buttonWidth*z,20,buttonWidth,buttonHeight);
         settingBox.add(stopButton);
+        z++;
+
+        // continueButton.setLayout(null);
+        // continueButton.setPosition(3 + spaceBetween*(x+z) + selectWidth*x + buttonWidth*z,20,buttonWidth,buttonHeight);
+        // settingBox.add(continueButton);
+        // z++;
 
         visualizeButton.setLayout(null);
-        visualizeButton.setPosition(1060,10,buttonWidth+20,buttonHeight+20);
+        visualizeButton.setPosition(3 + spaceBetween*(x+z) + selectWidth*x + buttonWidth*z,10,buttonWidth+20,buttonHeight+20);
         settingBox.add(visualizeButton);
+        z++;
 
         mainBox.add(settingBox);
 
@@ -280,6 +296,7 @@ public class PathFindingAlgo {
         // startPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         startPanel.add(startColor);
         startPanel.add(startLabel);
+        startPanel.setBackground(Color.WHITE);
         i++;
 
 
@@ -298,13 +315,14 @@ public class PathFindingAlgo {
         // endPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         endPanel.add(endColor);
         endPanel.add(endLabel);
+        endPanel.setBackground(Color.WHITE);
         i++;
 
 
 
 
 
-        checkedColor.setBackground(Color.GREEN);
+        checkedColor.setBackground(Color.lightGray);
         checkedColor.setLayout(null);
         checkedColor.setBounds(10, 5, 20, 20);
         checkedColor.setBorder(BorderFactory.createRaisedBevelBorder());
@@ -319,6 +337,7 @@ public class PathFindingAlgo {
         // checkedPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         checkedPanel.add(checkedColor);
         checkedPanel.add(checkedLabel);
+        checkedPanel.setBackground(Color.WHITE);
         i++;
 
 
@@ -337,6 +356,7 @@ public class PathFindingAlgo {
         // pathPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         pathPanel.add(pathColor);
         pathPanel.add(pathLabel);
+        pathPanel.setBackground(Color.WHITE);
         i++;
 
 
@@ -354,13 +374,14 @@ public class PathFindingAlgo {
         // wallPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         wallPanel.add(wallColor);
         wallPanel.add(wallLabel);
+        wallPanel.setBackground(Color.WHITE);
 
 
         distLabel.setLayout(null);
-        distLabel.setBounds(10,2,90,20);
+        distLabel.setBounds(10,2,90,25);
         distLabel.setFont(new Font("Serif", Font.PLAIN, 20));
         distValueLabel.setLayout(null);
-        distValueLabel.setBounds(100,2,150,20);
+        distValueLabel.setBounds(100,2,150,25);
         distValueLabel.setFont(new Font("Serif", Font.PLAIN, 20));;
 
         distPanel.setLayout(null);
@@ -368,6 +389,7 @@ public class PathFindingAlgo {
         // distPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         distPanel.add(distLabel);
         distPanel.add(distValueLabel);
+        distPanel.setBackground(Color.WHITE);
 
         legendBox.add(distPanel);
 
@@ -483,7 +505,22 @@ public class PathFindingAlgo {
 			}
         });
 
-        visualizeButton.addActionListener(new ActionListener() {		//ACTION LISTENERS
+        // continueButton.addActionListener(new ActionListener() {
+		// 	@Override
+		// 	public void actionPerformed(ActionEvent e) {
+
+        //         if(solving == false)
+        //         {
+        //             solving = true;
+        //         }
+        //         else
+        //         {
+        //             solving = false;
+        //         }
+		// 	}
+        // });
+
+        visualizeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
                 
@@ -527,12 +564,12 @@ public class PathFindingAlgo {
 
                         case 2 :
                         {
-                            // AStarAlgo();
+                            AStarAlgo();
                             break;
                         }
                     }
         }
-                    pause();
+        pause();
     }
 
     public void pause() {
@@ -551,16 +588,30 @@ public class PathFindingAlgo {
 
     public void DijkstraAlgo()
     {
-        
-        Queue<Cell> q = new LinkedList<>();
-        q.add(grid[srcX][srcY]);
+        // if(algoInProcess == false)
+        // {
+            if(srcX == destX && srcY == destY)
+            {
+                distValueLabel.setText("0 Units");
+                solving = false;
+                completed = false;
+                return;
+            }
+
+        ArrayList<Cell> q = new ArrayList<>();
+            // q = new ArrayList<>();
+            q.add(grid[srcX][srcY]);
+        //     algoInProcess = true;
+        // }
+        // Queue<Cell> q = new LinkedList<>();
+        // q.add(grid[srcX][srcY]);
          
         while(solving && !q.isEmpty())
         {
-            Cell temp = q.remove();
+            Cell temp = q.remove(0);
             int d = temp.getDist();
 
-            Queue<Cell> extra = addNeighbors(q,temp,d);
+            ArrayList<Cell> extra = addNeighbors(q,temp,d);
             if(extra.size() > 0)
             {
                 q.addAll(extra);
@@ -576,7 +627,77 @@ public class PathFindingAlgo {
             distValueLabel.setText("No path found");
         }
         completed = false;
+        // if(pauseAlgo == false)
+        // {
+        //     algoInProcess = false;
+        // }
     }
+
+
+    public void AStarAlgo()
+    {
+        if(srcX == destX && srcY == destY)
+            {
+                distValueLabel.setText("0 Units");
+                solving = false;
+                completed = false;
+                return;
+            }
+        
+        ArrayList<Cell> q = new ArrayList<>();
+        q.add(grid[srcX][srcY]);
+         
+        while(solving && !q.isEmpty())
+        {
+            Cell temp = q.remove(0);
+            int d = temp.getDist();
+
+            ArrayList<Cell> extra = addNeighbors(q,temp,d);
+            if(extra.size() > 0)
+            {
+                q.addAll(extra);
+                gridArea.repaint();
+                delay();
+            }
+            q = sort(q);
+        }
+        solving = false;
+
+        if(!completed)
+        {
+            distValueLabel.setText("No path found");
+        }
+        completed = false;
+    }
+
+
+    public static ArrayList<Cell> sort(ArrayList<Cell> al)
+    {
+        // ArrayList<Cell> al = new ArrayList<>(q);
+        int n = al.size();
+        for(int i=0 ; i<n ; i++)
+        {
+            for(int j=i+1 ; j<n ; j++)
+            {
+                if(totalDistance(al.get(j)) < totalDistance(al.get(i)))
+                {
+                    Cell x = al.get(i);
+                    al.set(i,al.get(j));
+                    al.set(j,x);
+                }
+            }
+        }
+        // q = new LinkedList<>(al);
+        return al;
+    }
+
+    public static double totalDistance(Cell curCell)
+    {
+        int travelledDist = curCell.getDist();
+        double distanceToBeTravelled = curCell.getheuristicDist();
+        return travelledDist + distanceToBeTravelled;
+    }
+
 
     public void delay() {
 		try {
@@ -584,11 +705,9 @@ public class PathFindingAlgo {
 		} catch(Exception e) {}
 	}
 
-    public Queue<Cell> addNeighbors(Queue<Cell> q,Cell temp,int dist)
+    public ArrayList<Cell> addNeighbors(ArrayList<Cell> q,Cell temp,int dist)
     {
-        Queue<Cell> q2 = new LinkedList<>();
-        int[] arX = {-1,0,1};
-        int[] arY = {-1,0,1};
+        ArrayList<Cell> q2 = new ArrayList<>();
 
         // for(int i=-1 ; i<2 ; i++)
         // {
@@ -624,6 +743,7 @@ public class PathFindingAlgo {
                             delay();
                         }
                         completed = true;
+                        algoInProcess = false;
                         String value = Integer.toString(count);
                         distValueLabel.setText(value+" Units");
                         
@@ -685,7 +805,6 @@ public class PathFindingAlgo {
 
     class Cell {
 		
-		// 0 = empty, 1 = start, 2 = end, 4 = checked, 5 = path 
 		private int cellType = 0;
 		private int x; 
         private int y;
@@ -702,6 +821,17 @@ public class PathFindingAlgo {
             prevY = -1;
         }
         
+        public double getheuristicDist() {
+            
+            int xDiff = Math.abs(x - destX);
+            int yDiff = Math.abs(y - destY);
+            int xSquare = xDiff*xDiff;
+            int ySquare = yDiff*yDiff;
+            double res = Math.sqrt(xSquare + ySquare);
+            return res;
+
+        }
+
         public int getPrevX() {
             return prevX;
         }
@@ -775,13 +905,13 @@ public class PathFindingAlgo {
 							g.setColor(Color.BLACK);
 							break;
 						case 4:
-							g.setColor(Color.GREEN);
+							g.setColor(Color.lightGray);
 							break;
 						case 5:
 							g.setColor(Color.YELLOW);
                             break;
                         case 6:
-							g.setColor(Color.ORANGE);
+							g.setColor(Color.lightGray);
 							break;
 					}
 					g.fillRect(i*cellSize,j*cellSize,cellSize,cellSize);
@@ -851,6 +981,10 @@ public class PathFindingAlgo {
                             srcY = y;
                             grid[srcX][srcY].setType(1); 
                         }
+                        // else if(grid[x][y].getType() == 1)
+                        // {
+
+                        // }
 						break;
 					}
 					case 1: 
@@ -896,22 +1030,9 @@ public class PathFindingAlgo {
         public RoundButton(String label) {
         //   super(label);
           text = label;
-          setBackground(new Color(65, 38, 92));        
+          setBackground(new Color(47, 149, 154));        
           //   setFocusable(false);
        
-          /*
-           These statements enlarge the button so that it 
-           becomes a circle rather than an oval.
-          */
-        //   Dimension size = getPreferredSize();
-        //   size.width = size.height = Math.max(size.width, size.height);
-        //   setPreferredSize(size);
-       
-        //   /*
-        //    This call causes the JButton not to paint the background.
-        //    This allows us to paint a round background.
-        //   */
-        //   setContentAreaFilled(false);
         }
 
         public void setPosition(int x,int y,int width,int height)
@@ -950,7 +1071,7 @@ public class PathFindingAlgo {
     // int x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
     // // Determine the Y coordinate for the text (note we add the ascent, as in java 2d 0 is top of the screen)
     // int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
-        g.setFont(new Font("Comic Sans MS", Font.BOLD, height*width/290)); 
+        g.setFont(new Font("Comic Sans MS", Font.PLAIN, height*width/290)); 
         FontMetrics fm = g.getFontMetrics();
         int x = (w - fm.stringWidth(text)) / 2;
         int y = (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
@@ -978,16 +1099,7 @@ public class PathFindingAlgo {
         //     g.fill3DRect(0,0,120,25,true); 
         }
        
-        // Hit detection.
-        // Shape shape;
-       
-        // public boolean contains(int x, int y) {
-        //   // If the button has changed size,  make a new shape object.
-        //   if (shape == null || !shape.getBounds().equals(getBounds())) {
-        //     shape = new Ellipse2D.Float(0, 0, getWidth(), getHeight());
-        //   }
-        //   return shape.contains(x, y);
-        // }
+        
        
       }
 
