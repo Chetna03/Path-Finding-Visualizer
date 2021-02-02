@@ -1,6 +1,7 @@
 # Path Finding Visualizer
 
-![Project](https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/image.png)
+<img src="https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/image.png" width="100" height="100">
+
 
 
 * Path Finding Visualizer project mainly focuses on finding a possible route from source to destination. 
