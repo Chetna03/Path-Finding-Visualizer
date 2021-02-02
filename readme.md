@@ -22,7 +22,7 @@
 
 ## Live Demo
 
-! [] (https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/ezgif.com-gif-maker.gif)
+![](https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/ezgif.com-gif-maker.gif)
 
 
 
