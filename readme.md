@@ -1,6 +1,6 @@
 # Path Finding Visualizer
 
-<img src="https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/image.png" width="50%" height="50%">
+<img src="https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/image.png" width="80%" height="80%">
 
 
 
