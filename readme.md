@@ -20,5 +20,10 @@
 * Java
 * Java Spring Library
 
+## Live Demo
+
+<video src="https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/ezgif.com-gif-maker.gif" width="80%" height="80%">
+
+
 
 
