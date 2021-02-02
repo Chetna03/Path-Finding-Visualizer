@@ -1,5 +1,7 @@
 # Path Finding Visualizer
 
+![Project](https://github.com/Chetna03/Path-Finding-Visualizer/blob/main/images/image.png)
+
 
 * Path Finding Visualizer project mainly focuses on finding a possible route from source to destination. 
 * It aids in the visualization various algorithms in action and how these algorihtms actually work.
